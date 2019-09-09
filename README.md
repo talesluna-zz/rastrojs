@@ -4,11 +4,11 @@ Uma biblioteca JavaScript para rastreamento de encomendas nos Correios.
 
 - [RastroJS](#rastrojs)
   - [Instalação](#instalacao)
-- [Exemplos](#examplos)
-  - [Básico](#exemplo-basico)
-  - [Com TypeScript](#exemplo-com-typescript)
-- [Contribuição](#contribuicao)
-- [Licença](#Licenca)
+  - [Exemplos](#exemplos)
+    - [Básico](#exemplo-basico)
+    - [Com TypeScript](#exemplo-com-typescript)
+  - [Contribuição](#contribuicao)
+  - [Licença](#Licenca)
 
 
 ## Instalação
@@ -16,9 +16,9 @@ Uma biblioteca JavaScript para rastreamento de encomendas nos Correios.
 npm install --save rastrojs
 ```
 
-# Exemplos
+## Exemplos
 
-## Examplo Básico
+### Exemplo Básico
 
 ```js
 const { rastro } = require('rastrojs');
@@ -35,7 +35,7 @@ example();
 
 ```
 
-## Examplo com TypeScript
+### Exemplo com TypeScript
 
 ```typescript
 import { RastroJS, Tracking } from 'rastrojs';
@@ -59,12 +59,12 @@ example
     .then(tracks => console.log(tracks));
 ```
 
-# Contribuição
+## Contribuição
 
 Este projeto está totalmente aberto à contribuição e quem tiver interesse pode realizar fork e enviar Pull Requests. **Importante: se necessário registre issues.**
 
 > Qualquer dúvida ou sugestão: tales.ferreira.luna@gmail.com
 
-# Licença
+## Licença
 
 RastroJS é totalmente aberta e está sob licença [MIT](./LICENSE), use a vontade.
