@@ -3,12 +3,12 @@
 Uma biblioteca JavaScript para rastreamento de encomendas nos Correios.
 
 - [RastroJS](#rastrojs)
-  - [Instalação](#instalacao)
+  - [Instalação](#instalação)
   - [Exemplos](#exemplos)
-    - [Básico](#exemplo-basico)
+    - [Básico](#exemplo-básico)
     - [Com TypeScript](#exemplo-com-typescript)
-  - [Contribuição](#contribuicao)
-  - [Licença](#Licenca)
+  - [Contribuição](#constribuição)
+  - [Licença](#licença)
 
 
 ## Instalação
