@@ -1,6 +1,6 @@
 {
   "name": "rastrojs",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Library for scraping Correios (Brazil) postal service and tracking orders.",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,7 @@
     "cheerio": "^1.0.0-rc.3",
     "iconv-lite": "^0.5.0",
     "moment": "^2.24.0",
+    "rastrojs": "^1.0.1",
     "request": "^2.88.0"
   },
   "devDependencies": {
