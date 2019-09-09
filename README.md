@@ -37,6 +37,8 @@ example();
 
 ### Exemplo com TypeScript
 
+> Certifique-se de incluir "rastrojs" em "types" no tsconfig.json
+
 ```typescript
 import { RastroJS, Tracking } from 'rastrojs';
 

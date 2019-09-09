@@ -1,1 +1,1 @@
-require('./dist');
+module.exports = require('./dist');

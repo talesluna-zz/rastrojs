@@ -2,7 +2,7 @@ import iconv from 'iconv-lite';
 import moment from 'moment';
 import cheerio from 'cheerio';
 import request, { Response } from 'request';
-import { Tracking } from '..';
+import { Tracking } from 'rastrojs';
 
 /**
  * Track Correios orders by code
