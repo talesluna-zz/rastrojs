@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "outDir": "dist",
+        "strict": true,
+        "pretty": false,
+        "rootDir": "./src",
+        "baseUrl": "./src",
+        "declaration": false,
+        "stripInternal": true,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "esModuleInterop": true,
+        "strictNullChecks": false,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "downlevelIteration": false,
+        "allowSyntheticDefaultImports": true,
+        "typeRoots": [
+            "node_modules/@types"
+        ]
+    },
+    "exclude": [
+        "lib",
+        "dist",
+        "node_modules",
+        "examples"
+    ]
+}

@@ -1,0 +1,36 @@
+{
+  "name": "rastrojs",
+  "version": "1.0.0",
+  "description": "Library for scraping Correios (Brazil) postal service and tracking orders.",
+  "main": "index.js",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "build2": "babel ./src --out-dir lib --extensions '.ts,.tsx'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/talesluna/rastrojs.git"
+  },
+  "keywords": [
+    "correios",
+    "rastreamento",
+    "objetos"
+  ],
+  "author": "Tales Luna <tales.ferreira.luna@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/talesluna/RastroJS/issues"
+  },
+  "homepage": "https://github.com/talesluna/RastroJS#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "iconv-lite": "^0.5.0",
+    "moment": "^2.24.0",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.13",
+    "@types/request": "^2.48.2"
+  },
+  "types": "./index.d.ts"
+}
