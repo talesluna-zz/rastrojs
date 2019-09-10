@@ -4,8 +4,7 @@
   "description": "Library for scraping Correios (Brazil) postal service and tracking orders.",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist && tsc",
-    "build2": "babel ./src --out-dir lib --extensions '.ts,.tsx'"
+    "build": "rm -rf dist && tsc"
   },
   "repository": {
     "type": "git",
