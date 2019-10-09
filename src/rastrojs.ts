@@ -3,6 +3,7 @@ import moment from 'moment';
 import cheerio from 'cheerio';
 import request, { Response } from 'request';
 import { Tracking } from 'rastrojs';
+import { TrackingType } from './enums';
 
 /**
  * Track Correios orders by code
@@ -53,10 +54,20 @@ export class RastroJS {
         .then(html => this.parseResponse(html))
 
         // Detect not found
-        .then(track => track ? {code, ...track} : {
-            code,
-            isInvalid: true,
-            error: 'not_found'
+        .then(track => {
+            if (track){
+                return {
+                    code, 
+                    trackingType: TrackingType[code.substr(0,2)], 
+                    ...track
+                };
+            } else {
+                return {
+                    code,
+                    isInvalid: true,
+                    error: 'not_found'
+                };
+            }
         });
 
     }
