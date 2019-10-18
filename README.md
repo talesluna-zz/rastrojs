@@ -63,7 +63,7 @@ example
 
 ## Contribuição
 
-Este projeto está totalmente aberto à contribuição e quem tiver interesse pode realizar fork e enviar Pull Requests. **Importante: se necessário registre issues.**
+Veja como em: [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 > Qualquer dúvida ou sugestão: tales.ferreira.luna@gmail.com
 
