@@ -3,3 +3,4 @@ dist
 .vscode
 .idea
 .DS_Store
+index.js
