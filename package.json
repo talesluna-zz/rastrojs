@@ -1,6 +1,6 @@
 {
   "name": "rastrojs",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Library for scraping Correios (Brazil) postal service and tracking orders.",
   "main": "index.js",
   "scripts": {

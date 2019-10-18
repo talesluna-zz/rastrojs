@@ -3,7 +3,7 @@ import moment from 'moment';
 import cheerio from 'cheerio';
 import request, { Response } from 'request';
 import { Tracking } from 'rastrojs';
-import { TrackingType } from './enums';
+import { TypesEnum } from './enums/types.enums';
 
 /**
  * Track Correios orders by code
@@ -58,7 +58,7 @@ export class RastroJS {
             if (track){
                 return {
                     code, 
-                    trackingType: TrackingType[code.substr(0,2)], 
+                    type: TypesEnum[code.toUpperCase().substr(0,2)] || null, 
                     ...track
                 };
             } else {

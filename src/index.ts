@@ -1,6 +1,6 @@
 import { RastroJS } from './rastrojs';
-import { TrackingType } from './enums';
+import { TypesEnum } from './enums/types.enums';
 
-export { RastroJS, TrackingType }
+export { RastroJS, TypesEnum }
 export const rastro = new RastroJS();
 export default rastro;

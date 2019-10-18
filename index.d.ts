@@ -2,7 +2,7 @@ declare module 'rastrojs' {
 
     export interface Tracking {
         code: string;
-        trackingType?: string;
+        type?: string;
         tracks?: {
             locale: string;
             status: string;
