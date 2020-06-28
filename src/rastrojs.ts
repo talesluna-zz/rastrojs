@@ -1,7 +1,8 @@
+import url from 'url';
+import https from 'https';
 import iconv from 'iconv-lite';
-import moment from 'moment';
 import cheerio from 'cheerio';
-import request, { Response } from 'request';
+
 import { Tracking } from 'rastrojs';
 import { TypesEnum } from './enums/types.enums';
 
@@ -16,7 +17,7 @@ export class RastroJS {
      *
      * @param  {string|string[]} codes
      */
-    public track = (codes: string | string[]) => Promise.all([].concat(codes).map(code => (this.requestObject(code))));
+    public track = (...codes: string[]) => Promise.all([].concat(...codes).map(code => (this.requestObject(code))));
 
     
     /**
@@ -24,53 +25,44 @@ export class RastroJS {
      *
      * @param  {string} code
      */
-    private requestObject(code: string): Tracking | Promise<Tracking> {
+    private requestObject = (code: string): Promise<Tracking> => new Promise((resolve, reject) => {
 
         // Invalid order code
-        if (!RastroJS.isValidOrderCode(code)) return {
+        if (!RastroJS.isValidOrderCode(code)) resolve({
             code,
             isInvalid: true,
             error: 'invalid_code'
-        };
-        
-        // Request the Correios page
-        return new Promise((resolve, reject) => request(
-            {
-                uri: this.uri,
-                form: { objetos: code },
-                gzip: true,
-                method: 'POST',
-                encoding: null,
-                strictSSL: false
-            },
-            (err: Error, res: Response, body: string) => err ? reject(err.message) : resolve(body),
+        });
 
-        ))
+        const request = https.request({ ...this.uri, method: 'POST', secureOptions: 0 }, response => {
 
-        // Decode charset
-        .then(html => iconv.decode(Buffer.from(html as string), 'binary'))
+            if (response.statusCode !== 200) return reject(response.statusMessage);
 
-        // Parse the response
-        .then(html => this.parseResponse(html))
+            let html = '';
+            response.on('data', chunk => html += chunk);
+            response.on('end', () => {
 
-        // Detect not found
-        .then(track => {
-            if (track){
-                return {
+                const track = this.parseResponse(iconv.decode(Buffer.from(html), 'binary'));
+
+                resolve(track ? {
                     code, 
                     type: TypesEnum[code.toUpperCase().substr(0,2)] || null, 
                     ...track
-                };
-            } else {
-                return {
+                } : {
                     code,
                     isInvalid: true,
                     error: 'not_found'
-                };
-            }
+                });
+
+            });
+
         });
 
-    }
+        request.write(`objetos=${code}`);
+        request.on('error', error => reject(error));
+        request.end();
+
+    });
 
 
     /**
@@ -104,7 +96,7 @@ export class RastroJS {
                     locale: lineData[0][2].toLowerCase(),
                     status: lineData[1][0].toLowerCase(),
                     observation: lineData[1][1] ? lineData[1][1].toLowerCase() : null,
-                    trackedAt: moment(lineData[0][0] + lineData[0][1], 'DD/MM/YYYYHH:mm').toDate(),
+                    trackedAt: new Date(lineData[0][0].split('/').reverse().join('-').concat(` ${lineData[0][1]} -3`)),
                 };
 
         });
@@ -134,7 +126,7 @@ export class RastroJS {
      */
     private get uri() {
 
-        return Buffer.from(
+        return  url.parse(Buffer.from(
             `
             \x61\x48\x52\x30\x63\x48\x4D\x36\x4C\x79
             \x39\x33\x64\x33\x63\x79\x4C\x6D\x4E\x76
@@ -148,7 +140,7 @@ export class RastroJS {
             \x52\x6C\x62\x6E\x51\x75\x59\x32\x5A\x74
             `,
             '\x62\x61\x73\x65\x36\x34'
-        ).toString();
+        ).toString());
 
     }
 

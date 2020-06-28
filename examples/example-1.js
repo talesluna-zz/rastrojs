@@ -1,10 +1,10 @@
-const { rastro } = require('rastrojs');
+const rastrojs = require('rastrojs');
 
 async function example() {
 
-    const track = await rastro.track('JT124720455BR');
+    const tracks = await rastrojs.track('JT124720455BR', 'NOT-CODE', 'AA124720455US');
 
-    console.log(track);
+    console.log(tracks);
 
 };
 
