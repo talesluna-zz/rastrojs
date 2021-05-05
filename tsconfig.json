@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es2020",
         "module": "commonjs",
         "outDir": "dist",
         "strict": true,
@@ -18,6 +18,7 @@
         "downlevelIteration": false,
         "allowSyntheticDefaultImports": true,
         "typeRoots": [
+            "./index.d.ts",
             "node_modules/@types"
         ]
     },

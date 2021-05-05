@@ -2,13 +2,13 @@
 
 Uma biblioteca JavaScript para rastreamento de encomendas nos Correios.
 
-- [RastroJS](#rastrojs)
-  - [Instalação](#instalação)
-  - [Exemplos](#exemplos)
+
+- [Instalação](#instalação)
+- [Exemplos](#exemplos)
     - [Básico](#exemplo-básico)
     - [Com TypeScript](#exemplo-com-typescript)
-  - [Contribuição](#constribuição)
-  - [Licença](#licença)
+- [Contribuição](#contribuição)
+- [Licença](#licença)
 
 
 ## Instalação
@@ -21,13 +21,13 @@ npm install --save rastrojs
 ### Exemplo Básico
 
 ```js
-const { rastro } = require('rastrojs');
+const rastrojs = require('rastrojs');
 
 async function example() {
 
-    const track = await rastro.track('JT124720455BR');
+    const tracks = await rastrojs.track('JT124720455BR', 'NOT-CODE', 'AA124720455US');
 
-    console.log(track);
+    console.log(tracks);
 
 };
 
@@ -37,11 +37,27 @@ example();
 
 ### Exemplo com TypeScript
 
-> Certifique-se de incluir "rastrojs" em "types" no tsconfig.json
+> Certifique-se de incluir "rastrojs" em "types" no tsconfig.json do seu projeto
 
 ```typescript
-import { RastroJS, Tracking } from 'rastrojs';
+import rastrojs, { RastroJS, Tracking } from 'rastrojs';
 
+
+// Funções
+async function getObjects() {
+
+    const tracks1 = await rastrojs.track('JT124720455BR');
+    const tracks2 = await rastrojs.track(['JT124720455BR', '123']);
+    const tracks3 = await rastrojs.track('JT124720455BR', 'JT124720455BC', '123');
+
+    console.log(tracks1, tracks2, tracks3);
+
+}
+
+getObjects();
+
+
+// Classes
 class Example extends RastroJS {
 
     constructor(private codes: string[]) {
@@ -49,7 +65,7 @@ class Example extends RastroJS {
     }
 
     public get tracks(): Promise<Tracking[]> {
-        return this.track(this.codes)
+        return this.track(this.codes);
     }
 
 }

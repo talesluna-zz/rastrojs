@@ -271,4 +271,5 @@ export enum TypesEnum {
     XM = 'sedex mundi',
     XR = 'objeto internacional (pps tributado)',
     XX = 'objeto internacional (pps tributado)',
+    UNKNOWN = 'desconhecido',
 }
