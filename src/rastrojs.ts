@@ -1,6 +1,5 @@
 import url from 'url';
 import https from 'https';
-import iconv from 'iconv-lite';
 import cheerio from 'cheerio';
 
 import { Tracking } from 'rastrojs';
@@ -17,11 +16,11 @@ export class RastroJS {
      *
      * @param  {string|string[]} codes
      */
-    public track = (...codes: string[]) => Promise.all([].concat(...codes).map(code => (this.requestObject(code))));
+    public track = (...codes: string[]) => Promise.all(codes.map(this.requestObject));
 
-    
+
     /**
-     * Request object/order by coode
+     * Request object/order by code
      *
      * @param  {string} code
      */
@@ -34,29 +33,41 @@ export class RastroJS {
             error: 'invalid_code'
         });
 
-        const request = https.request({ ...this.uri, method: 'POST', secureOptions: 0 }, response => {
+        const request = https.request(
+            this.uri, 
+            {
+                method: 'POST',
+                secureOptions: 0,
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            },
+            response => {
 
-            if (response.statusCode !== 200) return reject(response.statusMessage);
+                if (response.statusCode !== 200) return reject(response.statusMessage);
 
-            let html = '';
-            response.on('data', chunk => html += chunk);
-            response.on('end', () => {
+                let html = '';
+                response.setEncoding('binary')
+                response.on('data', chunk => html += chunk);
+                response.on('end', () => {
 
-                const track = this.parseResponse(iconv.decode(Buffer.from(html), 'binary'));
+                    const track = this.parseResponse(html);
 
-                resolve(track ? {
-                    code, 
-                    type: TypesEnum[code.toUpperCase().substr(0,2)] || null, 
-                    ...track
-                } : {
-                    code,
-                    isInvalid: true,
-                    error: 'not_found'
+                    resolve(track ? {
+                        code, 
+                        type: TypesEnum[code.toUpperCase().substr(0,2)] || TypesEnum.UNKNOWN, 
+                        ...track
+                    } : {
+                        code,
+                        isInvalid: true,
+                        error: 'not_found'
+                    });
+
                 });
 
-            });
-
-        });
+            }
+        );
 
         request.write(`objetos=${code}`);
         request.on('error', error => reject(error));
@@ -113,9 +124,9 @@ export class RastroJS {
         // Return full order tracking object
         return {
             tracks,
-            isDelivered : lastTrack.status.includes('objeto entregue'),
-            postedAt    : firstTrack.trackedAt,
-            updatedAt   : lastTrack.trackedAt,
+            isDelivered: lastTrack.status.includes('objeto entregue'),
+            postedAt: firstTrack.trackedAt,
+            updatedAt: lastTrack.trackedAt,
         };
 
     }
@@ -126,7 +137,7 @@ export class RastroJS {
      */
     private get uri() {
 
-        return  url.parse(Buffer.from(
+        return new url.URL(Buffer.from(
             `
             \x61\x48\x52\x30\x63\x48\x4D\x36\x4C\x79
             \x39\x33\x64\x33\x63\x79\x4C\x6D\x4E\x76
@@ -141,6 +152,22 @@ export class RastroJS {
             `,
             '\x62\x61\x73\x65\x36\x34'
         ).toString());
+
+    }
+
+    /**
+     * Random user agents
+     */
+    private get userAgent(): string {
+
+        const UAS = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51'
+        ];
+
+        return UAS[Math.floor(Math.random() * UAS.length)];
 
     }
 
