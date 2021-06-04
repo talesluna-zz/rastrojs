@@ -10,13 +10,26 @@ import { TypesEnum } from './enums/types.enums';
  */
 export class RastroJS {
 
+    public parallelTracks = 10;
 
     /**
      * Get the track of orders/objects
      *
      * @param  {string|string[]} codes
      */
-    public track = (...codes: string[]) => Promise.all(codes.map(this.requestObject));
+    public async track(...codes: string[]) {
+
+        const chunkSize = Math.ceil(codes.length / this.parallelTracks);
+        const tracks: Tracking[] = [];
+
+        for (let i = 0; i < chunkSize; i++) {
+            const results = await Promise.all(codes.slice(this.parallelTracks * i, this.parallelTracks * (i+1)).map(this.requestObject));
+            tracks.push(...results);
+        }
+
+        return tracks;
+
+    }
 
 
     /**
@@ -24,7 +37,7 @@ export class RastroJS {
      *
      * @param  {string} code
      */
-     public static isValidOrderCode = (code: string) => /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/.test(code);
+    public static isValidOrderCode = (code: string) => /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/.test(code);
 
 
     /**
@@ -103,7 +116,7 @@ export class RastroJS {
             .map(line => {
 
                 // Map coluns and extract the data
-                const lineData = document(line)
+                const [ [ date, time, locale ], [ status, observation ], ] = document(line)
                     .find('td')
                     .toArray()
                     .map(column => (document(column).text().replace(/[\n\r\t]/g, '')).trim())
@@ -112,10 +125,10 @@ export class RastroJS {
 
                 // Create a track object
                 return {
-                    locale: lineData[0][2].toLowerCase(),
-                    status: lineData[1][0].toLowerCase(),
-                    observation: lineData[1][1] ? lineData[1][1].toLowerCase() : null,
-                    trackedAt: new Date(lineData[0][0].split('/').reverse().join('-').concat(` ${lineData[0][1]} -3`)),
+                    locale: locale.toLowerCase(),
+                    status: status.toLowerCase(),
+                    observation: observation ? observation.toLowerCase() : null,
+                    trackedAt: new Date(date.split('/').reverse().join('-').concat(` ${time} -3`)),
                 };
 
         });
