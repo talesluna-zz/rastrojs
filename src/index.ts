@@ -1,9 +1,10 @@
 import { RastroJS } from './rastrojs';
 
-const { track } = new RastroJS();
-
 export = {
-    track,
     RastroJS,
+    get track() {
+        const instance = new RastroJS();
+        return instance.track.bind(instance);
+    },
     isValidOrderCode: RastroJS.isValidOrderCode,
 };

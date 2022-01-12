@@ -1,6 +1,5 @@
 import url from 'url';
 import https from 'https';
-import cheerio from 'cheerio';
 
 import { Tracking } from 'rastrojs';
 import { TypesEnum } from './enums/types.enums';
@@ -10,13 +9,30 @@ import { TypesEnum } from './enums/types.enums';
  */
 export class RastroJS {
 
+    private readonly PARALLEL_TRACKS = 10;
 
     /**
      * Get the track of orders/objects
      *
      * @param  {string|string[]} codes
      */
-    public track = (...codes: string[]) => Promise.all(codes.map(this.requestObject));
+    public async track(...codes: string[]) {
+
+        const flatCodes = codes.flat();
+
+        const chunkSize = Math.ceil(flatCodes.length / this.PARALLEL_TRACKS);
+        const tracks: Tracking[] = [];
+
+        for (let i = 0; i < chunkSize; i++) {
+            const results = await Promise.all(
+                flatCodes.slice(this.PARALLEL_TRACKS * i, this.PARALLEL_TRACKS * (i+1)).map(this.requestObject.bind(this))
+            );
+            tracks.push(...results);
+        }
+
+        return tracks;
+
+    }
 
 
     /**
@@ -24,7 +40,7 @@ export class RastroJS {
      *
      * @param  {string} code
      */
-     public static isValidOrderCode = (code: string) => /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/.test(code);
+    public static isValidOrderCode = (code: string) => /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/.test(code);
 
 
     /**
@@ -32,56 +48,49 @@ export class RastroJS {
      *
      * @param  {string} code
      */
-    private requestObject = (code: string): Promise<Tracking> => new Promise((resolve, reject) => {
-
-        // Invalid order code
-        if (!RastroJS.isValidOrderCode(code)) resolve({
-            code,
-            isInvalid: true,
-            error: 'invalid_code'
-        });
-
-        const request = https.request(
-            this.uri, 
-            {
-                method: 'POST',
-                secureOptions: 0,
-                headers: {
-                    'User-Agent': this.userAgent,
-                    'Content-Type': 'application/x-www-form-urlencoded',
+    private requestObject(code: string): Promise<Tracking> {
+        return new Promise(resolve => {
+    
+            // Invalid order code
+            if (!RastroJS.isValidOrderCode(code)) resolve({
+                code,
+                isInvalid: true,
+                error: 'invalid_code'
+            });
+    
+            const searchData = `objetos=${code}`;
+            const request = https.request(
+                this.uri, 
+                {
+                    method: 'POST',
+                    headers: {
+                        'User-Agent': this.userAgent,
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Content-Length': searchData.length,
+                    }
+                },
+                response => {
+    
+                    if (response.statusCode !== 200) {
+                        const error = response.statusMessage.toLowerCase().replace(/ /g, '_');
+                        return resolve({ code, isInvalid: true, error });
+                    }
+    
+                    let html = '';
+                    response.setEncoding('utf-8')
+                    response.on('data', chunk => html += chunk);
+                    response.on('error', error => resolve({ code, isInvalid: true, error: error.message }));
+                    response.on('end', () => resolve(this.parseResponse(html, code)));
+    
                 }
-            },
-            response => {
-
-                if (response.statusCode !== 200) return reject(response.statusMessage);
-
-                let html = '';
-                response.setEncoding('binary')
-                response.on('data', chunk => html += chunk);
-                response.on('end', () => {
-
-                    const track = this.parseResponse(html);
-
-                    resolve(track ? {
-                        code, 
-                        type: TypesEnum[code.toUpperCase().substr(0,2)] || TypesEnum.UNKNOWN, 
-                        ...track
-                    } : {
-                        code,
-                        isInvalid: true,
-                        error: 'not_found'
-                    });
-
-                });
-
-            }
-        );
-
-        request.write(`objetos=${code}`);
-        request.on('error', error => reject(error));
-        request.end();
-
-    });
+            );
+    
+            request.write(searchData);
+            request.on('error', error => resolve({ code, isInvalid: true, error: error.message }));
+            request.end();
+    
+        });
+    }
 
 
     /**
@@ -89,52 +98,52 @@ export class RastroJS {
      *
      * @param  {string} html
      */
-    private parseResponse(html: string) {
+    private parseResponse(html: string, code: string): Tracking {
 
-        // Load HTML document as cheerio
-        const document = cheerio.load(html);
+        // Strip html tags, keep only text
+        const onlyText = html.replace(/<\/?[^>]+(>|$)/g, '');
 
-        // Load table lines
-        const lines = document('.listEvent').find('tr');
+        // if the tracking code is not present on text, this code not found
+        if (!onlyText.includes(code.toUpperCase()) && !onlyText.includes(code.toLowerCase())) {
+            return {
+                code,
+                isInvalid: true,
+                error: 'not_found'
+            };
+        }
 
-        // Map lines
-        const tracks = lines
-            .toArray()
-            .map(line => {
+        const lines = onlyText
+            .replace(/\n|\r|\t/g, '')
+            .replace(/&nbsp;/g, ' ')
+            .split(/(\d+\/\d+\/\d+)/g)
+            .slice(3)
+            .filter(l => l.length);
 
-                // Map coluns and extract the data
-                const lineData = document(line)
-                    .find('td')
-                    .toArray()
-                    .map(column => (document(column).text().replace(/[\n\r\t]/g, '')).trim())
-                    .filter(data => !!data)
-                    .map(data => data.split(/\s\s+/g))
+        const tracks = [];
 
-                // Create a track object
-                return {
-                    locale: lineData[0][2].toLowerCase(),
-                    status: lineData[1][0].toLowerCase(),
-                    observation: lineData[1][1] ? lineData[1][1].toLowerCase() : null,
-                    trackedAt: new Date(lineData[0][0].split('/').reverse().join('-').concat(` ${lineData[0][1]} -3`)),
-                };
-
+        lines.forEach((l, i) => {
+            if (i%2 != 0) {
+                const date = lines[i-1];
+                const [time, locale, status, ...observation] = l.trim().toLowerCase().split(/\s{2,}/g);
+                tracks.push({
+                    locale: locale.replace(/\/$/g, '').trim(),
+                    status,
+                    observation: observation.length ? observation.join(' ') : null,
+                    trackedAt: new Date(date.split('/').reverse().join('-').concat(` ${time} -3`)),
+                });
+            }
         });
 
-        // Not found order
-        if (!tracks.length) return null;
-
-        // Reorder tracks
         tracks.reverse();
+        const [firstTrack, lastTrack] = [tracks[0], tracks[tracks.length - 1]];
 
-        // Detect first and last tracks to calculate dates
-        const [firstTrack, lastTrack] = [tracks[0],  tracks[tracks.length-1]];
-
-        // Return full order tracking object
         return {
-            tracks,
+            code,
+            type: TypesEnum[code.toUpperCase().slice(0, 2)] || TypesEnum.UNKNOWN,
             isDelivered: lastTrack.status.includes('objeto entregue'),
             postedAt: firstTrack.trackedAt,
             updatedAt: lastTrack.trackedAt,
+            tracks,
         };
 
     }
@@ -182,6 +191,8 @@ export class RastroJS {
      * @param value
      * @returns
      */
-    private decoder = (value: string) => Buffer.from(value, '\x62\x61\x73\x65\x36\x34').toString('utf-8');
+    private decoder(value: string) {
+        return Buffer.from(value, '\x62\x61\x73\x65\x36\x34').toString('utf-8');
+    };
 
 }
