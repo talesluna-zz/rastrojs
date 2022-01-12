@@ -49,7 +49,7 @@ export class RastroJS {
      * @param  {string} code
      */
     private requestObject(code: string): Promise<Tracking> {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
     
             // Invalid order code
             if (!RastroJS.isValidOrderCode(code)) resolve({
@@ -63,7 +63,6 @@ export class RastroJS {
                 this.uri, 
                 {
                     method: 'POST',
-                    secureOptions: 0,
                     headers: {
                         'User-Agent': this.userAgent,
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -73,20 +72,21 @@ export class RastroJS {
                 response => {
     
                     if (response.statusCode !== 200) {
-                        return reject(response.statusMessage);
+                        const error = response.statusMessage.toLowerCase().replace(/ /g, '_');
+                        return resolve({ code, isInvalid: true, error });
                     }
     
                     let html = '';
                     response.setEncoding('utf-8')
                     response.on('data', chunk => html += chunk);
-                    response.on('error', error => reject(error));
+                    response.on('error', error => resolve({ code, isInvalid: true, error: error.message }));
                     response.on('end', () => resolve(this.parseResponse(html, code)));
     
                 }
             );
     
             request.write(searchData);
-            request.on('error', error => reject(error));
+            request.on('error', error => resolve({ code, isInvalid: true, error: error.message }));
             request.end();
     
         });

@@ -13,7 +13,7 @@ declare module 'rastrojs' {
         postedAt?: Date;
         updatedAt?: Date;
         isInvalid?: boolean;
-        error?: 'invalid_code' | 'not_found';
+        error?: string;
     }
 
     export function track(codes: string[]): Promise<Tracking[]>;

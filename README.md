@@ -11,7 +11,7 @@ Uma biblioteca Nodejs para rastreamento de encomendas nos Correios.
 ![](https://img.shields.io/github/stars/talesluna/rastrojs?color=yellow&label=Stars&logo=github)
 ---
 
-[Instalação](#install) - [Exemplos](#examples) - [Contribuição](#contribution) - [Licença](#license)
+[Instalação](#install) - [Exemplos](#examples) - [Respostas](#response) - [Contribuição](#contribution) - [Licença](#license)
 
 ----
 
@@ -52,8 +52,9 @@ const tracks = await myDeliveries.tracks;
 
 > Para TypeScript, certifique-se de incluir "rastrojs" em "types" no tsconfig.json do seu projeto
 
-## Pattern
+## Response
 
+### Fields
 |Field|Type|Description|Exemple
 |-|-|-|-|
 |code|String|Código do objeto pesquisado|JT124720455BR
@@ -66,25 +67,50 @@ const tracks = await myDeliveries.tracks;
 |tracks.status|String|Status do objeto segundo dos correios|Objeto postado
 |tracks.observation|String|Observações do evento registrado|De unidade X para ...
 |tracks.trackedAt|Date|Data do evento registrado|2022-01-03T14:26:00.000Z
+|error?|String|Mensagem de erro possível|service_unavailable*
+|isInvalid?|Boolean|Flag de resposta não esperada (erro)|true*
+
+> *. isInvalid e error só existem em casos de respostas de erro.
 
 ```js
-{
-    code: 'JT124720455BR',
-    type: 'registrado urgente',
-    isDelivered: true,
-    postedAt: 2021-12-22T21:15:00.000Z,
-    updatedAt: 2022-01-07T17:18:00.000Z,
-    tracks: [
-        /* ... */
-        {
-            locale: 'sao paulo / sp',
-            status: 'objeto entregue ao destinatário',
-            observation: null,
-            trackedAt: 2022-01-07T17:18:00.000Z
-        }
-    ]
-}
+[
+    {
+        code: 'JT124720455BR',
+        type: 'registrado urgente',
+        isDelivered: true,
+        postedAt: 2021-12-22T21:15:00.000Z,
+        updatedAt: 2022-01-07T17:18:00.000Z,
+        tracks: [
+            /* ... */
+            {
+                locale: 'sao paulo / sp',
+                status: 'objeto entregue ao destinatário',
+                observation: null,
+                trackedAt: 2022-01-07T17:18:00.000Z
+            }
+        ]
+    },
+    {
+        code: 'JT124720455CH',
+        error: 'not_found',
+        isInvalid: true,
+    },
+    {
+        code: 'JT124720455FR',
+        error: 'service_unavailable',
+        isInvalid: true,
+    }
+]
 ```
+
+### Errors
+|Erro|Description
+|-|-|
+|invalid_code|O código informado não corresponde ao formato dos correios.
+|not_found|A encomenda não foi encontrada no serviços dos correios
+|service_unavailable|O serviço web dos correios estava indisponível no momento
+|internal_server_error|Ocorreu um erro interno no serviço web dos correios
+
 
 ## Contribution
 
