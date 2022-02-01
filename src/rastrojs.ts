@@ -77,7 +77,7 @@ export class RastroJS {
                     }
     
                     let html = '';
-                    response.setEncoding('latin1')
+                    response.setEncoding('latin1');
                     response.on('data', chunk => html += chunk);
                     response.on('error', error => resolve({ code, isInvalid: true, error: error.message }));
                     response.on('end', () => resolve(this.parseResponse(html, code)));
@@ -125,13 +125,13 @@ export class RastroJS {
             if (i%2 != 0) {
                 const date = lines[i-1];
                 const [time, locale, status, ...observation] = l.trim().toLowerCase().split(/\s{2,}/g);
-                let formattedObservation = null
+                let formattedObservation = null;
 
                 if (observation.length) {
-                    const rawObservation = observation.join(' ')
+                    const rawObservation = observation.join(' ');
 
                     if (!rawObservation.includes('getelementbyid')) {
-                        formattedObservation = rawObservation
+                        formattedObservation = rawObservation;
                     }
                 }
 
